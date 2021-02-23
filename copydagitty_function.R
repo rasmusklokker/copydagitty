@@ -6,7 +6,7 @@ copydagitty <- function(x, autoalign=FALSE, autoalign.tol=0.01){
   #first we get the names and coordinates of the vertices
   
   
-  split <- str_split(string, "]") #we split the string by ], which will give us some chunks that we can work with
+  split <- str_split(x, "]") #we split the string by ], which will give us some chunks that we can work with
   
   length <- length(split[[1]]) #we'll assign this as an object, or else some of the code later gets very dense
   
