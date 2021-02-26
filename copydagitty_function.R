@@ -1,8 +1,10 @@
 
-
 copydagitty <- function(x, autoalign=FALSE, autoalign.tol=0.01){
   
   
+  #x <- dag.raw
+  
+
   #first we get the names and coordinates of the vertices
   
   
@@ -17,13 +19,22 @@ copydagitty <- function(x, autoalign=FALSE, autoalign.tol=0.01){
   first <- first[[1]][length(first[[1]])] #We'll retain the last element, length(first[[1]]),  
   #in "first" since this where the name and the position of the first vertex is located.
   
-  first <- gsub("[[:blank:]]", "", first) #we get rid of blank space
+  space.first <- str_detect(first, " ") #detect space in node names
   
+  first <- gsub("[[:blank:]](\\[)", "\\1", first) #we get rid of blank space
+  
+  first <- trimws(first)
   
   #other names and positions contains line changes and blank spaces, so let's get rid of those
   
-  namepos <- gsub("\n|[[:blank:]]", "", split[[1]][2:(length-1)]) #the last element of "split" contains the specification of the dag
+
+  
+  
+  namepos <- gsub("\n|[[:blank:]](\\[)", "\\1", split[[1]][2:(length-1)]) #the last element of "split" contains the specification of the dag
   #so we won't include that here
+  
+  namepos <- trimws(namepos)
+  
   
   
   #didn't come up with this regex, source: https://stackoverflow.com/a/31530950
@@ -80,8 +91,26 @@ copydagitty <- function(x, autoalign=FALSE, autoalign.tol=0.01){
   namepos.df <- do.call("rbind", namepos.df) #As usual, lapply spits out a list of dataframes instead just the one dataframe containing all the info
   #so we just "stack" the dataframes on top of each other, i.e. we rbind the dataframes using do.call
   
+  space.other <- str_detect(namepos.df$name, " ") #detect space in node names
+  
+  if( any(space.other) ) warning('some node names contained spaces. These have been replaced by "_"')
+  
+  
+  namepos.df$name <- gsub(" ", "_", namepos.df$name) #get rid of spaces in names
+  
   dag <- paste("dag{", split[[1]][length], sep="") #now we get to extracting the actual specification of the dag. Since we threw away the 
   #"dag{" part earlier we'll have to add that here using paste
+
+  
+  #source: https://stackoverflow.com/a/953496
+ # gsub("(\\n) .*? (->)","\\1 name \\2", dag)
+  
+  dag <- gsub("([a-z]) ([a-z])","\\1_\\2", dag) #this gets rid of spaces in the dag part, and replaces them with "_"
+  
+  
+  
+  
+  #gsub("(?=.{2}$).","blah", dag, perl=TRUE)
   
   dag <- dagitty(dag) #and then we can use the dagitty package to parse the code from dagitty.net
   
